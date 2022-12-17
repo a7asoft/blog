@@ -2,12 +2,10 @@ package com.asoft.blog.ui.sign_in
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import com.asoft.blog.MainActivity
+import com.asoft.blog.ui.main.activities.MainActivity
 import com.asoft.blog.R
 import com.asoft.blog.databinding.ActivitySignInBinding
 import com.asoft.blog.utils.Constants

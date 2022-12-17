@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/grey_100"
     android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    tools:context=".ui.main.activities.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -19,15 +20,22 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <include
+        android:id="@+id/includedLayout"
+        layout="@layout/content_main" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
+        android:insetBottom="0dp"
+        android:textStyle="bold"
+        app:icon="@drawable/ic_round_post_add_24"
+        android:paddingBottom="4dp"
+        android:text="Nuevo post"
         android:layout_marginBottom="16dp"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@drawable/ic_round_post_add_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
