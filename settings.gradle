@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url 'https://repo1.maven.org/maven2/' }
+        maven { url 'https://jitpack.io/' }
+        maven { url 'https://nexus.xebianlabs.com/nexus/content/repositories/public/' }
+        maven { url 'https://archiva.interlocsolutions.com/archiva/content/repository/internal/' }
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://repo1.maven.org/maven2/' }
+        maven { url 'https://jitpack.io/' }
+        maven { url 'https://nexus.xebianlabs.com/nexus/content/repositories/public/' }
+        maven { url 'https://archiva.interlocsolutions.com/archiva/content/repository/internal/' }
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "Blog"
+include ':app'
