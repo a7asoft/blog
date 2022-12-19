@@ -26,13 +26,11 @@ class NetworkMonitoringUtil(context: Context) : NetworkCallback() {
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
-        Log.d(TAG, "onAvailable() called: Connected to network")
         mNetworkStateManager.setNetworkConnectivityStatus(true)
     }
 
     override fun onLost(network: Network) {
         super.onLost(network)
-        Log.e(TAG, "onLost() called: with: Lost network connection")
         mNetworkStateManager.setNetworkConnectivityStatus(false)
     }
 
@@ -41,7 +39,6 @@ class NetworkMonitoringUtil(context: Context) : NetworkCallback() {
      * (Note: Register only once to prevent duplicate callbacks)
      */
     fun registerNetworkCallbackEvents() {
-        Log.d(TAG, "registerNetworkCallbackEvents() called")
         mConnectivityManager.registerNetworkCallback(mNetworkRequest, this)
     }
 

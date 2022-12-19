@@ -11,10 +11,6 @@ class NetworkStateManager private constructor() {
      * Updates the active network status live-data
      */
     fun setNetworkConnectivityStatus(connectivityStatus: Boolean) {
-        Log.d(
-            TAG,
-            "setNetworkConnectivityStatus() called with: connectivityStatus = [$connectivityStatus]"
-        )
         if (Looper.myLooper() == Looper.getMainLooper()) {
             activeNetworkStatusMLD.setValue(connectivityStatus)
         } else {
@@ -27,7 +23,6 @@ class NetworkStateManager private constructor() {
      */
     val networkConnectivityStatus: LiveData<Boolean>
         get() {
-            Log.d(TAG, "getNetworkConnectivityStatus() called")
             return activeNetworkStatusMLD
         }
 
@@ -40,7 +35,6 @@ class NetworkStateManager private constructor() {
         val instance: NetworkStateManager?
             get() {
                 if (INSTANCE == null) {
-                    Log.d(TAG, "getInstance() called: Creating new instance")
                     INSTANCE = NetworkStateManager()
                 }
                 return INSTANCE

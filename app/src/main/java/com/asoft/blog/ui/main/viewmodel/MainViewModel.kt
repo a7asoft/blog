@@ -1,6 +1,5 @@
 package com.asoft.blog.ui.main.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -73,7 +72,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val dataFetchEventListener: ValueEventListener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    Log.wtf("onDataChange", "onDataChange")
 
                     val list = mutableListOf<Post>()
                     for (snap in dataSnapshot.children) {
@@ -84,18 +82,15 @@ class MainViewModel @Inject constructor(
                         _status.value = Status.EMPTY
                     }
 
-                    Log.wtf("list", "${list.size}")
 
                     //remove all from db and add this
                     CoroutineScope(Dispatchers.Default).launch {
                         blogDao.deleteAllPosts()
                         for (item in list) {
                             val resul = blogDao.insert(item)
-                            Log.wtf("resul", "$resul")
                         }
                         val blogResultDB = blogDao.getArticles()
                         withContext(Dispatchers.Main) {
-                            Log.wtf("blogResultDB", "${blogResultDB.size}")
                             _posts.value = blogResultDB
                             _tempList = blogResultDB
                         }
@@ -104,7 +99,6 @@ class MainViewModel @Inject constructor(
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     _status.value = Status.ERROR
-                    Log.wtf("Failed to read value.", databaseError.message)
                 }
             }
 
@@ -121,10 +115,6 @@ class MainViewModel @Inject constructor(
                             }
                         }
                     }
-                   /* if (_posts.value?.isEmpty() == true) { //  Timeout
-                        reference.removeEventListener(dataFetchEventListener)
-                        _status.value = Status.EMPTY
-                    }*/
                 } else {
                     CoroutineScope(Dispatchers.Default).launch {
                         val blogResultDB = blogDao.getArticles()

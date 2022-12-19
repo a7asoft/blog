@@ -191,17 +191,6 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    /*override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-        Log.d("*******", "onMenuItemActionExpand")
-        return true
-    }
-
-    override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-        Log.d("*******", "onMenuItemActionCollapse")
-        return true
-    }*/
-
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_search -> true
