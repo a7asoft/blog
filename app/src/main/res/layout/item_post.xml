@@ -89,7 +89,7 @@
                                 android:id="@+id/tvName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_medium"
+                                android:fontFamily="@font/poppins_semi_bold"
                                 android:gravity="center_vertical"
                                 android:textColor="@color/black"
                                 android:textSize="13sp" />
@@ -111,6 +111,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/spacing_small"
+                            android:maxLines="2"
+                            android:fontFamily="@font/poppins_medium"
+                            android:ellipsize="end"
                             android:gravity="center_vertical"
                             android:textColor="@color/black"
                             android:textSize="10sp" />
