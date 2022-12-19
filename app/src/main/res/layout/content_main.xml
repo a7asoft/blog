@@ -11,10 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="visible"
+        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/errorView">
 
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/shimmer_view_container"
@@ -66,10 +67,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
+        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/errorView">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -80,12 +82,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/lottieEmptyView"
                 android:layout_width="250dp"
                 android:layout_height="250dp"
                 android:layout_gravity="center"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
                 app:lottie_rawRes="@raw/empty_list" />
 
             <TextView
@@ -93,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="32dp"
                 android:gravity="center"
-                android:text="Aún no hay posts"
+                android:text="@string/a_n_no_hay_posts"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -102,12 +105,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="32dp"
                 android:gravity="center"
-                android:text="Puede crear un post haciendo click en el botón añadir nuevo Post"
-                android:textSize="20sp"
+                android:text="@string/puede_crear_un_post_haciendo_click_en_el_bot_n_a_adir_nuevo_post"
+                android:textSize="15sp"
                 android:textStyle="normal" />
 
-
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/addPost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -116,26 +119,29 @@
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
                 android:paddingHorizontal="32dp"
-                android:text="Añadir"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:text="@string/a_adir"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="15dp" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/errorView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="90dp"
+        android:background="@color/grey_200"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -143,60 +149,66 @@
 
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/lottieErrorView"
-                android:layout_width="250dp"
-                android:layout_height="250dp"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_centerVertical="true"
                 android:layout_gravity="center"
-                app:lottie_rawRes="@raw/no_signal" />
+                android:layout_marginStart="16dp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/no_internet" />
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="32dp"
-                android:gravity="center"
-                android:text="Ha ocurrido un error"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_toEndOf="@+id/lottieErrorView"
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="32dp"
-                android:gravity="center"
-                android:text="Asegúrese de poseer una conexión activa y estable a internet"
-                android:textSize="17sp"
-                android:textStyle="normal" />
+                <TextView
+                    android:id="@+id/textTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_hay_internet"
+                    android:textColor="@color/red_600"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginHorizontal="32dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:gravity="center"
-                android:paddingHorizontal="32dp"
-                android:text="Reintentar"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/textSubTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/aseg_rese_de_poseer_una_conexi_n_activa_y_estable_a_internet"
+                    android:textSize="13sp"
+                    android:textStyle="normal" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey_500"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey_500"
+            app:layout_constraintBottom_toBottomOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/pull_to_refresh"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPosts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:visibility="visible"
+        android:visibility="gone"
+        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/errorView"
+        tools:listitem="@layout/item_post" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvPosts"
-            android:layout_width="match_parent"
-            tools:listitem="@layout/item_post"
-            android:layout_height="wrap_content" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

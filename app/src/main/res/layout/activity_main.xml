@@ -16,8 +16,33 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" />
+            android:layout_height="?attr/actionBarSize"
+            app:title="">
 
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:orientation="horizontal"
+               android:layout_gravity="center"
+               android:layout_height="wrap_content">
+
+               <com.airbnb.lottie.LottieAnimationView
+                   android:layout_width="40dp"
+                   android:layout_height="40dp"
+                   app:lottie_autoPlay="true"
+                   app:lottie_rawRes="@raw/blog" />
+
+               <TextView
+                   android:layout_width="wrap_content"
+                   android:layout_gravity="center"
+                   android:layout_marginStart="16dp"
+                   android:text="@string/mighty_blog"
+                   android:layout_marginTop="3dp"
+                   android:fontFamily="@font/poppins_black"
+                   android:textSize="18sp"
+                   android:layout_height="wrap_content"/>
+
+           </LinearLayout>
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <include
@@ -30,12 +55,15 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
-        android:insetBottom="0dp"
-        android:textStyle="bold"
-        app:icon="@drawable/ic_round_post_add_24"
-        android:paddingBottom="4dp"
-        android:text="Nuevo post"
         android:layout_marginBottom="16dp"
+        android:paddingBottom="3dp"
+        android:text="@string/nuevo_post"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:backgroundTint="@color/primary"
+        app:icon="@drawable/ic_round_post_add_24"
+        app:iconPadding="16dp"
+        app:iconTint="@color/white"
         app:srcCompat="@drawable/ic_round_post_add_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

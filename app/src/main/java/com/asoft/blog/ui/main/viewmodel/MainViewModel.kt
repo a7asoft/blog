@@ -1,79 +1,184 @@
 package com.asoft.blog.ui.main.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.asoft.blog.data.local.BlogDao
 import com.asoft.blog.data.remote.Post
-import com.asoft.blog.domain.common.GetPostsUseCase
-import com.asoft.blog.utils.BaseResult
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
+
+enum class Status { LOADING, SUCCESS, ERROR, EMPTY }
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getPostsUseCase: GetPostsUseCase
+    private val reference: DatabaseReference,
+    private val blogDao: BlogDao
 ) : ViewModel() {
 
-    //regions flow
-    private val _posts = MutableStateFlow(listOf<Post>())
-    val mPosts: Flow<List<Post>> get() = _posts
+    private var _tempList: List<Post> = emptyList()
 
-    //observe state get regions
-    private val _postsState = MutableStateFlow<State>(
-        State.Init
-    )
-    val mStatePosts: StateFlow<State> get() = _postsState
+    private val _title = MutableStateFlow("")
+    private val _description = MutableStateFlow("")
 
-    //observable methods
-    private fun setLoading() {
-        _postsState.value = State.IsLoading(true)
+    private var _internet = MutableLiveData(true)
+    val internet: LiveData<Boolean> get() = _internet
+
+    private var _posts = MutableLiveData<List<Post>>()
+    val posts: LiveData<List<Post>> get() = _posts
+
+    private var _status = MutableLiveData<Status>()
+    val status: LiveData<Status> get() = _status
+
+    fun setTitle(data: String) {
+        _title.value = data
     }
 
-    private fun hideLoading() {
-        _postsState.value = State.IsLoading(false)
+    fun setInternet(data: Boolean) {
+        _internet.value = data
     }
 
-    private fun showError(error: String) {
-        _postsState.value = State.ShowError(error)
+    fun setDescription(data: String) {
+        _description.value = data
     }
 
-    private fun showException(error: Exception) {
-        _postsState.value = State.ShowException(error)
+    val titleMessages = combine(_title) { title ->
+        val isTitleCorrect = title.isNotEmpty()
+        return@combine if (!isTitleCorrect) "Este campo es obligatorio" else ""
     }
+
+    val descMessages = combine(_description) { description ->
+        val isDescCorrect = description.isNotEmpty()
+        return@combine if (!isDescCorrect) "Este campo es obligatorio" else ""
+    }
+
+    val isSubmitEnabled =
+        combine(_title, _description) { title, description ->
+            val isTitleCorrect = title.isNotEmpty()
+            val isDescriptionCorrect = description.isNotEmpty()
+
+            return@combine isTitleCorrect and isDescriptionCorrect
+        }
 
     fun getPosts() {
         viewModelScope.launch {
-            getPostsUseCase.invoke()
-                .onStart {
-                    setLoading()
-                }
-                .catch {
-                    hideLoading()
-                    showException(it as Exception)
-                }
-                .collect { result ->
-                    hideLoading()
-                    when (result) {
-                        is BaseResult.Success -> {
-                            _posts.tryEmit(result.data)
+            val dataFetchEventListener: ValueEventListener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    Log.wtf("onDataChange", "onDataChange")
+
+                    val list = mutableListOf<Post>()
+                    for (snap in dataSnapshot.children) {
+                        list.add(snap.getValue(Post::class.java)!!)
+                    }
+
+                    if (list.size == 0) {
+                        _status.value = Status.EMPTY
+                    }
+
+                    Log.wtf("list", "${list.size}")
+
+                    //remove all from db and add this
+                    CoroutineScope(Dispatchers.Default).launch {
+                        blogDao.deleteAllPosts()
+                        for (item in list) {
+                            val resul = blogDao.insert(item)
+                            Log.wtf("resul", "$resul")
                         }
-                        is BaseResult.Error -> {
-                            showError(result.rawResponse ?: "")
-                        }
-                        is BaseResult.Exception -> {
-                            showException(result.exception)
+                        val blogResultDB = blogDao.getArticles()
+                        withContext(Dispatchers.Main) {
+                            Log.wtf("blogResultDB", "${blogResultDB.size}")
+                            _posts.value = blogResultDB
+                            _tempList = blogResultDB
                         }
                     }
                 }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    _status.value = Status.ERROR
+                    Log.wtf("Failed to read value.", databaseError.message)
+                }
+            }
+
+            if (_internet.value == true) {
+                reference.addValueEventListener(dataFetchEventListener)
+                delay(5000L)
+                if (_internet.value == true) {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val blogResultDB = blogDao.getArticles()
+                        withContext(Dispatchers.Main) {
+                            if (blogResultDB.isEmpty() && _posts.value?.isEmpty() == true) {
+                                reference.removeEventListener(dataFetchEventListener)
+                                _status.value = Status.EMPTY
+                            }
+                        }
+                    }
+                   /* if (_posts.value?.isEmpty() == true) { //  Timeout
+                        reference.removeEventListener(dataFetchEventListener)
+                        _status.value = Status.EMPTY
+                    }*/
+                } else {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val blogResultDB = blogDao.getArticles()
+                        withContext(Dispatchers.Main) {
+                            _posts.value = blogResultDB
+                        }
+                    }
+                    reference.removeEventListener(dataFetchEventListener)
+                }
+            } else {
+                CoroutineScope(Dispatchers.Default).launch {
+                    val blogResultDB = blogDao.getArticles()
+                    withContext(Dispatchers.Main) {
+                        _posts.value = blogResultDB
+                    }
+                }
+                reference.removeEventListener(dataFetchEventListener)
+            }
         }
     }
-}
 
-sealed class State {
-    object Init : State()
-    data class IsLoading(val isLoading: Boolean) : State()
-    data class ShowError(val error: String) : State()
-    data class ShowException(val error: Exception) : State()
+    fun addPost(post: Post) {
+        _status.value = Status.LOADING
+        viewModelScope.launch {
+            reference.push().setValue(post).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    _status.value = Status.SUCCESS
+                } else {
+                    _status.value = Status.ERROR
+                }
+            }.addOnFailureListener {
+                _status.value = Status.ERROR
+            }
+        }
+    }
+
+    fun filterData(s: String) {
+        if (s == "") {
+            _posts.value = _tempList
+        } else {
+            val filtered = _posts.value?.filter {
+                it.title!!.lowercase().contains(s.lowercase()) or it.description!!.lowercase()
+                    .contains(s.lowercase())
+            }
+
+            if (filtered != null) {
+                if (filtered.isNotEmpty()) {
+                    _posts.value = filtered!!
+                } else {
+                    _posts.value = emptyList()
+                }
+            } else {
+                _posts.value = emptyList()
+            }
+        }
+    }
 }

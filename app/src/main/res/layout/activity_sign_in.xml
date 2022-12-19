@@ -4,45 +4,72 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f8e1ae"
+    android:background="@color/primary"
     android:fitsSystemWindows="true"
     tools:context=".ui.sign_in.SignInActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.10" />
+        app:layout_constraintGuide_percent="0.15" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.90" />
+        app:layout_constraintGuide_percent="0.85" />
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:src="@drawable/ic_launcher_background"
-        app:layout_constraintBottom_toTopOf="@+id/tv_desc"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginVertical="32dp"
+        app:lottie_rawRes="@raw/blog"
+        app:lottie_autoPlay="true"
+        app:layout_constraintBottom_toTopOf="@+id/tv_header"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_header" />
+        app:layout_constraintTop_toBottomOf="@+id/guideline1" />
 
     <TextView
         android:id="@+id/tv_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:text="Poke Teams"
-        android:textColor="@color/black"
-        android:textSize="30sp"
+        android:text="@string/mighty_blog"
+        android:textColor="@color/white"
+        android:textSize="40sp"
+        android:visibility="invisible"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/guideline1" />
+        app:layout_constraintBottom_toTopOf="@+id/tv_desc" />
+
+    <TextView
+        android:id="@+id/tv_header1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:text="@string/hola_bienvenido_a_de_vuelta"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/guideline1"
+        app:layout_constraintTop_toBottomOf="@+id/guideline0" />
+
 
     <TextView
         android:id="@+id/tv_desc"
@@ -51,9 +78,10 @@
         android:layout_marginBottom="32dp"
         android:gravity="center"
         android:paddingHorizontal="32dp"
-        android:text="The most powerfull experience in Pokemon World!"
-        android:textFontWeight="500"
+        android:text="@string/the_most_powerfull_blogging_experience"
         android:textSize="18sp"
+        android:textColor="@color/white"
+        android:visibility="invisible"
         android:textStyle="normal"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,9 +100,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/white"
-            android:text="Continue with Google"
+            android:text="@string/continuar_con_google"
             android:textColor="#5C4618"
             app:cornerRadius="25dp"
+            android:visibility="invisible"
             app:icon="@drawable/google_svgrepo_com"
             app:iconPadding="16dp"
             app:iconTint="#5C4618"

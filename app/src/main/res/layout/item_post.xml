@@ -98,8 +98,8 @@
                                 android:id="@+id/tvDate"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_light"
                                 android:layout_marginStart="8dp"
+                                android:fontFamily="@font/poppins_light"
                                 android:gravity="center_vertical"
                                 android:textColor="@color/grey_600"
                                 android:textSize="11sp" />
@@ -118,14 +118,13 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
+                <com.asoft.blog.utils.ReadMoreTextView
                     android:id="@+id/tv_post_text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/spacing_large"
-                    android:ellipsize="end"
-                    android:maxLines="4"
-                    android:textColor="@color/grey_60"
+                    app:trimMode= "trimModeLength"
+                    app:trimLength="70"
                     android:textSize="13sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>

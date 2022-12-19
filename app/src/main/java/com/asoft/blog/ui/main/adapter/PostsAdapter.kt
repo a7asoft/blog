@@ -9,6 +9,7 @@ import com.asoft.blog.R
 import com.asoft.blog.data.remote.Post
 import com.asoft.blog.databinding.ItemPostBinding
 import com.asoft.blog.utils.ColorGenerator
+import com.asoft.blog.utils.Constants
 import com.asoft.blog.utils.TextDrawable
 import com.bumptech.glide.Glide
 
@@ -34,31 +35,25 @@ class PostsAdapter(private val posts: MutableList<Post>, private val context: Co
         RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(post: Post) {
             itemBinding.postTitle.text = post.title
-            itemBinding.tvPostText.text = post.description
             itemBinding.tvName.text = post.author
             itemBinding.tvDate.text = post.date
 
-            val generator = ColorGenerator.MATERIAL
-            val color = generator!!.randomColor
+            itemBinding.tvPostText.text = post.description
 
-            val drawable: TextDrawable = TextDrawable.builder()
-                .buildRound(post.author?.first()?.toString(), color)
+            if (post.file != "") {
+                Glide.with(context).load(post.file).circleCrop()
+                    .into(itemBinding.profilePicture)
+            } else {
+                val generator = ColorGenerator.MATERIAL
+                val color = generator!!.randomColor
 
-            itemBinding.profilePicture.setImageDrawable(drawable)
-            /*Glide.with(context)
-                .load(drawable)
-                .circleCrop()
-                .into(itemBinding.profilePicture)*/
-            //itemBinding.profilePicture.setImageDrawable(drawable)
-            /*val person = getRandomPerson(context)
-            itemBinding.tvName.text = person.name.trim()
-            Glide.with(context)
-                .load(person.imageDrw)
-                .circleCrop()
-                .into(itemBinding.profilePicture)*/
+                val drawable: TextDrawable = TextDrawable.builder()
+                    .buildRound(post.author?.first()?.toString(), color)
+                itemBinding.profilePicture.setImageDrawable(drawable)
+            }
 
             itemBinding.cardComment.setOnClickListener {
-                onTapListener?.onTap(post)
+                //onTapListener?.onTap(post)
             }
         }
     }
@@ -69,7 +64,8 @@ class PostsAdapter(private val posts: MutableList<Post>, private val context: Co
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.itemView.animation = AnimationUtils.loadAnimation(holder.itemView.context, R.anim.rv_item_anim)
+        holder.itemView.animation =
+            AnimationUtils.loadAnimation(holder.itemView.context, R.anim.rv_item_anim)
         return holder.bind(posts[position])
     }
 

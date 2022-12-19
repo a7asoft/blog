@@ -1,39 +1,44 @@
 package com.asoft.blog.ui.main.activities
 
+import android.app.SearchManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.flowWithLifecycle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.asoft.blog.R
 import com.asoft.blog.data.remote.Post
 import com.asoft.blog.databinding.ActivityMainBinding
+import com.asoft.blog.ui.addpost.fragment.AddPostBS
 import com.asoft.blog.ui.main.adapter.PostsAdapter
 import com.asoft.blog.ui.main.viewmodel.MainViewModel
-import com.asoft.blog.ui.main.viewmodel.State
+import com.asoft.blog.ui.main.viewmodel.Status
 import com.asoft.blog.utils.FabExtendingOnScrollListener
+import com.asoft.blog.utils.NetworkStateManager
 import com.asoft.blog.utils.hideViewWithAnimation
 import com.asoft.blog.utils.showViewWithAnimation
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
     private val mainViewModel: MainViewModel by viewModels()
+
+    //Network state observer
+    private val activeNetworkStateObserver: Observer<Boolean> =
+        Observer { isConnected -> handleConnection(isConnected) }
+
+    private fun handleConnection(connected: Boolean?) {
+        mainViewModel.setInternet(connected!!)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -41,28 +46,30 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        registerInternetObserver()
         setupRecyclerView()
+        observe()
+        observeStatus()
+        getPosts()
         listeners()
-
         setSupportActionBar(binding.toolbar)
     }
 
+    private fun registerInternetObserver() {
+        //Network state observe
+        NetworkStateManager.instance?.networkConnectivityStatus
+            ?.observe(this, activeNetworkStateObserver)
+    }
+
     private fun listeners() {
-        binding.includedLayout.pullToRefresh.setOnRefreshListener {
-            mainViewModel.getPosts()
+        binding.fab.setOnClickListener {
+            val addPostBS: BottomSheetDialogFragment = AddPostBS()
+            addPostBS.show(supportFragmentManager, addPostBS.tag)
         }
 
-        binding.fab.setOnClickListener {
-            val db = Firebase.firestore
-            db.collection("posts")
-                .add(Post())
-                .addOnSuccessListener { documentReference ->
-                    Log.d("TAG", "DocumentSnapshot added with ID: ${documentReference.id}")
-                }
-                .addOnFailureListener { e ->
-                    Log.w("TAG", "Error adding document", e)
-                }
-
+        binding.includedLayout.addPost.setOnClickListener {
+            val addPostBS: BottomSheetDialogFragment = AddPostBS()
+            addPostBS.show(supportFragmentManager, addPostBS.tag)
         }
 
         binding.includedLayout.rvPosts.addOnScrollListener(FabExtendingOnScrollListener(binding.fab))
@@ -76,109 +83,133 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-
         binding.includedLayout.rvPosts.apply {
             adapter = mAdapter
             layoutManager = LinearLayoutManager(this@MainActivity)
         }
     }
 
-    override fun onResume() {
-        observe()
+    private fun observeStatus() {
+        mainViewModel.status.observe(this) { status ->
+            when (status) {
+                Status.ERROR -> {
+                    binding.includedLayout.errorView.showViewWithAnimation()
+                }
+                Status.EMPTY -> {
+                    //show alert
+                    showEmptyView()
+                }
+                else -> {}
+            }
+        }
+
+        mainViewModel.internet.observe(this) { status ->
+            when (status) {
+                true -> {
+                    binding.includedLayout.errorView.hideViewWithAnimation()
+                    binding.fab.showViewWithAnimation()
+                    binding.includedLayout.addPost.showViewWithAnimation()
+                }
+                false -> {
+                    binding.includedLayout.errorView.showViewWithAnimation()
+                    binding.fab.hideViewWithAnimation()
+                    binding.includedLayout.addPost.hideViewWithAnimation()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun getPosts() {
+        binding.includedLayout.shimmerView.showViewWithAnimation()
+        binding.includedLayout.rvPosts.hideViewWithAnimation()
+        binding.includedLayout.emptyView.hideViewWithAnimation()
         mainViewModel.getPosts()
-        super.onResume()
     }
 
-    private fun observe(){
-        observePosts()
-        observeState()
-    }
-
-    private fun observeState() {
-        mainViewModel.mStatePosts
-            .flowWithLifecycle(lifecycle, Lifecycle.State.CREATED)
-            .onEach { state ->
-                handleState(state)
-            }
-            .launchIn(lifecycle.coroutineScope)
-    }
-
-    private fun handleState(state: State) {
-        when (state) {
-            is State.IsLoading -> {
-                if (state.isLoading) {
-                    binding.includedLayout.pullToRefresh.hideViewWithAnimation()
-                    binding.includedLayout.errorView.hideViewWithAnimation()
-                    binding.includedLayout.emptyView.hideViewWithAnimation()
-                    binding.includedLayout.shimmerView.showViewWithAnimation()
-                } else {
-                    binding.includedLayout.pullToRefresh.isRefreshing = false
-                    binding.includedLayout.pullToRefresh.showViewWithAnimation()
-                    binding.includedLayout.errorView.hideViewWithAnimation()
-                    binding.includedLayout.emptyView.hideViewWithAnimation()
-                    binding.includedLayout.shimmerView.hideViewWithAnimation()
+    private fun observe() {
+        mainViewModel.posts.observe(this) { response ->
+            binding.includedLayout.shimmerView.hideViewWithAnimation()
+            if (response != null) {
+                if (response.isNotEmpty()) {
+                    showData()
+                    binding.includedLayout.rvPosts.adapter?.let {
+                        if (it is PostsAdapter) {
+                            it.updateList(response)
+                        }
+                    }
                 }
             }
-            is State.ShowError -> {
-                binding.includedLayout.pullToRefresh.isRefreshing = false
-                binding.includedLayout.pullToRefresh.hideViewWithAnimation()
-                binding.includedLayout.errorView.showViewWithAnimation()
-                binding.includedLayout.emptyView.hideViewWithAnimation()
-                binding.includedLayout.shimmerView.hideViewWithAnimation()
-            }
-            is State.Init -> {
-                binding.includedLayout.pullToRefresh.isRefreshing = false
-                binding.includedLayout.pullToRefresh.hideViewWithAnimation()
-                binding.includedLayout.errorView.hideViewWithAnimation()
-                binding.includedLayout.emptyView.hideViewWithAnimation()
-                binding.includedLayout.shimmerView.showViewWithAnimation()
-            }
-            is State.ShowException -> {
-                binding.includedLayout.pullToRefresh.isRefreshing = false
-                binding.includedLayout.pullToRefresh.hideViewWithAnimation()
-                binding.includedLayout.errorView.showViewWithAnimation()
-                binding.includedLayout.emptyView.hideViewWithAnimation()
-                binding.includedLayout.shimmerView.hideViewWithAnimation()
-            }
         }
-
     }
 
-    private fun observePosts() {
-        mainViewModel.mPosts
-            .flowWithLifecycle(lifecycle, Lifecycle.State.CREATED)
-            .onEach { data ->
-                handlePostsResponse(data)
-            }
-            .launchIn(lifecycle.coroutineScope)
+    private fun showData() {
+        binding.includedLayout.rvPosts.showViewWithAnimation()
+        binding.includedLayout.emptyView.hideViewWithAnimation()
     }
 
-    private fun handlePostsResponse(data: List<Post>) {
-        if (data.isNotEmpty()) {
-            binding.includedLayout.rvPosts.adapter?.let {
-                if (it is PostsAdapter) {
-                    it.updateList(data)
-                }
-            }
-        } else {
-            //TODO show empty view
-
-        }
+    private fun showEmptyView() {
+        binding.includedLayout.rvPosts.hideViewWithAnimation()
+        binding.includedLayout.errorView.hideViewWithAnimation()
+        binding.includedLayout.emptyView.showViewWithAnimation()
+        binding.includedLayout.shimmerView.hideViewWithAnimation()
+        binding.fab.hideViewWithAnimation()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
+
+        val searchItem: MenuItem? = menu.findItem(R.id.action_search)
+        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchView: SearchView = searchItem?.actionView as SearchView
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (query.isNotEmpty()) {
+                    mainViewModel.filterData(query)
+                } else {
+                    mainViewModel.filterData("")
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(s: String): Boolean {
+                if (s.isNotEmpty()) {
+                    mainViewModel.filterData(s)
+                } else {
+                    mainViewModel.filterData("")
+                }
+                return false
+            }
+        })
+
+        searchView.setOnCloseListener {
+            mainViewModel.filterData("")
+            false
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    /*override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+        Log.d("*******", "onMenuItemActionExpand")
         return true
     }
 
+    override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+        Log.d("*******", "onMenuItemActionCollapse")
+        return true
+    }*/
+
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_search -> true
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onBackPressed() {
+        finish()
     }
 }
