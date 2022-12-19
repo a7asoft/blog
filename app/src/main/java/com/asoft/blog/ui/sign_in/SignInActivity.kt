@@ -75,6 +75,7 @@ class SignInActivity : AppCompatActivity() {
             Constants.name = account.displayName ?: ""
             Constants.photoUrl = account.photoUrl
             startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+            finish()
         }
     }
 
@@ -93,6 +94,7 @@ class SignInActivity : AppCompatActivity() {
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
                                 startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                                finish()
                             } else {
                                 showAlertDialog(
                                     mTitle = "Error al iniciar sesión",
