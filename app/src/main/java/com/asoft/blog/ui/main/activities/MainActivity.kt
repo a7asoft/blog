@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.asoft.blog.R
@@ -29,6 +30,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    private var isConnected: Boolean = true
+    private var posts: List<Post>? = emptyList()
     private lateinit var binding: ActivityMainBinding
     private val mainViewModel: MainViewModel by viewModels()
 
@@ -37,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         Observer { isConnected -> handleConnection(isConnected) }
 
     private fun handleConnection(connected: Boolean?) {
-        mainViewModel.setInternet(connected!!)
+        isConnected = connected!!
+        mainViewModel.setInternet(connected)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,10 +100,11 @@ class MainActivity : AppCompatActivity() {
                     binding.includedLayout.errorView.showViewWithAnimation()
                 }
                 Status.EMPTY -> {
-                    //show alert
                     showEmptyView()
                 }
-                else -> {}
+                else -> {
+
+                }
             }
         }
 
@@ -129,6 +134,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun observe() {
         mainViewModel.posts.observe(this) { response ->
+            posts = response
             binding.includedLayout.shimmerView.hideViewWithAnimation()
             if (response != null) {
                 if (response.isNotEmpty()) {
@@ -136,6 +142,11 @@ class MainActivity : AppCompatActivity() {
                     binding.includedLayout.rvPosts.adapter?.let {
                         if (it is PostsAdapter) {
                             it.updateList(response)
+                        }
+                    }
+                    if (isConnected) {
+                        if (!binding.fab.isVisible) {
+                            binding.fab.showViewWithAnimation()
                         }
                     }
                 }
@@ -150,7 +161,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun showEmptyView() {
         binding.includedLayout.rvPosts.hideViewWithAnimation()
-        binding.includedLayout.errorView.hideViewWithAnimation()
         binding.includedLayout.emptyView.showViewWithAnimation()
         binding.includedLayout.shimmerView.hideViewWithAnimation()
         binding.fab.hideViewWithAnimation()
